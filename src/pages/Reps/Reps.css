@@ -1,0 +1,40 @@
+/* pages/Reps/Reps.css */
+.reps {
+    padding: 20px;
+}
+
+.reps h2 {
+    text-align: center;
+}
+
+.reps h3 {
+    margin: 2em 0;
+    text-align: center;
+}
+
+.reps-grid {
+    padding: 2em 0;
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-gap: 20px;
+    width: 100%;
+    grid-auto-rows: minmax(100px, auto);
+}
+
+
+@media (min-width: 600px) {
+
+    .reps h3 {
+        text-align: inherit;
+    }
+
+    .reps-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (min-width: 900px) {
+    .reps-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}

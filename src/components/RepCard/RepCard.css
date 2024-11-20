@@ -1,0 +1,73 @@
+/* components/RepCard/RepCard.css */
+.rep-card {
+    display: flex;
+    flex-direction: column;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    width: 100%;
+    box-sizing: border-box;
+    word-break: break-word;
+}
+
+.rep-image {
+    width: 100%;
+    /* Full width of the container */
+    position: relative;
+    /* Allows for a positioned child */
+    overflow: hidden;
+    /* Ensures no overflow */
+    padding-top: 75%;
+}
+
+.rep-image img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    /* Ensures the image covers the area without distortion */
+    display: block;
+    max-height: 300px;
+}
+
+.rep-info {
+    padding: 15px;
+    word-break: break-word;
+}
+
+.rep-info h3 {
+    margin-top: 0;
+}
+
+.rep-info p {
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+}
+
+.rep-social {
+    margin-top: 10px;
+}
+
+.rep-social a {
+    margin-right: 10px;
+}
+
+@media (min-width: 600px) {
+    .rep-card {
+        flex-direction: row;
+    }
+
+    .rep-image {
+        padding-top: 0;
+        flex: 1;
+    }
+
+    .rep-image img {
+        height: auto;
+    }
+
+    .rep-info {
+        flex: 1;
+    }
+}

@@ -1,0 +1,88 @@
+/* BillCard.css */
+
+.bill-card-nav {
+  text-decoration: none;
+  background-color: #fff;
+  padding: 20px 25px;
+  border-radius: 12px;
+  border-left: 8px solid var(--default-color);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  color: black;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.bill-card-nav:hover {
+  transform: scale(1.05);
+  /* Slightly enlarge the div */
+  text-decoration: none;
+}
+
+.bill-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 15px;
+  flex-wrap: wrap;
+}
+
+.bill-level {
+  font-weight: 500;
+  font-size: 0.9em;
+  margin-right: 15px;
+  padding: 5px 10px;
+  background-color: var(--default-color);
+  color: #fff;
+  border-radius: 4px;
+}
+
+.bill-title {
+  margin: 0;
+  font-size: 1.2em;
+  color: var(--text-color);
+}
+
+.bill-identifier,
+.bill-latest-action,
+.bill-sponsors,
+.bill-type {
+  margin-bottom: 10px;
+  color: #555;
+}
+
+.bill-latest-vote p {
+  margin-bottom: 10px;
+  color: #555;
+}
+
+.bill-votes {
+  margin-top: 15px;
+  color: #333;
+}
+
+.bill-link {
+  display: inline-block;
+  margin-top: 15px;
+  color: var(--primary-color);
+  text-decoration: none;
+}
+
+.bill-link:hover {
+  text-decoration: underline;
+}
+
+@media (max-width: 1024px) {
+  .bill-card {
+    flex: 1 1 calc(50% - 20px);
+  }
+}
+
+@media (max-width: 600px) {
+  .bill-card {
+    flex: 1 1 100%;
+    padding: 15px 20px;
+  }
+
+  .bill-title {
+    font-size: 1em;
+  }
+}
