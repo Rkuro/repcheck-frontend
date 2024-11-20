@@ -12,7 +12,7 @@ function Home() {
   const handleSubmit = (e) => {
     e.preventDefault();
     setZipCode(inputZip);
-    navigate('/votes');
+    navigate('/bills');
   };
 
   return (
