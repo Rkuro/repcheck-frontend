@@ -50,6 +50,11 @@ Send build bundle to server:
 scp -r build/* repcheck:/mnt/volume_nyc1_01/frontend/
 ```
 
+Then just copy to nginx directory:
+```bash
+cp -r /mnt/volume_nyc1_01/frontend/* /var/www/repcheck.us/html/
+```
+
 ### `npm run build` fails to minify
 
 This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
