@@ -1,8 +1,11 @@
-export function mapLevel(levelStr) {
-    const map = {
-        country: "Federal",
-        state: "State",
-        municipality: "Municipality"
+export function mapJurisdictionLevel(jurisdictionAreaId) {
+
+    if (jurisdictionAreaId === 'ocd-division/country:us') {
+        return 'federal'
     }
-    return map[levelStr]
+    if (jurisdictionAreaId.match(/^ocd-division\/country:us\/state:[a-z]{2}$/)) {
+        return 'state'
+    }
+
+    return 'local'
 }

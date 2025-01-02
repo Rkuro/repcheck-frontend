@@ -1,25 +1,23 @@
 // components/RepCard/RepCard.js
 import React from 'react';
+import {startCase} from 'lodash';
 import './RepCard.css';
 
 function RepCard({ rep }) {
     const {
         name,
         image,
-        current_party,
-        current_chamber,
+        chamber,
         current_district,
         email,
         capitol_voice,
         district_voice,
         capitol_address,
         district_address,
-        twitter,
-        facebook,
-        instagram,
-        youtube,
         links,
     } = rep;
+
+    console.log(rep);
 
     const handleImageError = (e) => {
         e.target.onerror = null; // Prevents looping
@@ -34,10 +32,7 @@ function RepCard({ rep }) {
             <div className="rep-info">
                 <h3>{name}</h3>
                 <p>
-                    <strong>Party:</strong> {current_party}
-                </p>
-                <p>
-                    <strong>Chamber:</strong> {current_chamber}
+                    <strong>Chamber:</strong> {chamber}
                 </p>
                 <p>
                     <strong>District:</strong> {current_district}
@@ -63,35 +58,11 @@ function RepCard({ rep }) {
                 )}
 
                 <div className="rep-social">
-                    {twitter && (
-                        <a href={`https://twitter.com/${twitter}`} target="_blank" rel="noopener noreferrer">
-                            Twitter
+                    {links && links.length > 0 && links.map((link) => (
+                        <a href={link.url} target="_blank" rel="noopener noreferrer">
+                            {startCase(link.note)}
                         </a>
-                    )}
-                    {facebook && (
-                        <a href={`https://facebook.com/${facebook}`} target="_blank" rel="noopener noreferrer">
-                            Facebook
-                        </a>
-                    )}
-                    {instagram && (
-                        <a
-                            href={`https://instagram.com/${instagram}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                        >
-                            Instagram
-                        </a>
-                    )}
-                    {youtube && (
-                        <a href={`https://youtube.com/${youtube}`} target="_blank" rel="noopener noreferrer">
-                            YouTube
-                        </a>
-                    )}
-                    {links && links.length > 0 && (
-                        <a href={links[0]} target="_blank" rel="noopener noreferrer">
-                            Website
-                        </a>
-                    )}
+                    ))}
                 </div>
             </div>
         </div>

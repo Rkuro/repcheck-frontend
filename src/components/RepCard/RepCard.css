@@ -50,6 +50,8 @@
 }
 
 .rep-social a {
+    display: flex;
+    padding: 4px;
     margin-right: 10px;
 }
 

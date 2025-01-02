@@ -10,10 +10,10 @@
     flex-direction: column;
 }
 
-.vote-card .vote-card-counts {
-    display: flex;
-    align-items: center;
+.vote-info {
+    display: block;
 }
+
 
 .vote-card-counts .counts-block {
     font-weight: 500;
@@ -86,8 +86,17 @@
     }
 }
 
-@media (min-width: 600) {
+@media (min-width: 600px) {
     .vote-card {
         flex-direction: row;
     }
+
+    .vote-card .vote-card-counts {
+        display: flex;
+        align-items: center;
+    }
+}
+
+@media (min-width: 0px) {
+    
 }

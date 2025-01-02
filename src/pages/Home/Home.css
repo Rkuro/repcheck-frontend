@@ -1,98 +1,98 @@
 /* src/pages/Home/Home.css */
 .home {
-  margin-top: 100px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+	margin-top: 100px;
+	display: flex;
+	justify-content: center;
+	align-items: center;
 }
 
 .home-container {
-  background-color: #fff;
-  padding: 40px 30px;
-  border-radius: 12px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  width: 100%;
-  max-width: 400px;
+	background-color: #fff;
+	padding: 40px 30px;
+	border-radius: 12px;
+	box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+	width: 100%;
+	max-width: 400px;
 }
 
 .home-container h2 {
-  text-align: center;
-  margin-bottom: 20px;
-  color: var(--text-color);
+	text-align: center;
+	margin-bottom: 20px;
+	color: var(--text-color);
 }
 
 .home-container p {
-  font-size: 12px;
-  text-align: center;
+	font-size: 12px;
+	text-align: center;
 }
 
 .home-container form {
-  display: flex;
-  flex-direction: column;
+	display: flex;
+	flex-direction: column;
 }
 
 .home-container label {
-  margin-bottom: 10px;
-  font-size: 1em;
-  color: #555;
+	margin-bottom: 10px;
+	font-size: 1em;
+	color: #555;
 }
 
 .home-container input {
-  padding: 12px 15px;
-  font-size: 1em;
-  border: 1px solid #ccc;
-  border-radius: 8px;
-  margin-bottom: 20px;
-  transition: border-color 0.3s;
+	padding: 12px 15px;
+	font-size: 1em;
+	border: 1px solid #ccc;
+	border-radius: 8px;
+	margin-bottom: 20px;
+	transition: border-color 0.3s;
 }
 
 .home-container input:focus {
-  border-color: var(--primary-color);
-  outline: none;
+	border-color: var(--primary-color);
+	outline: none;
 }
 
 .home-container button {
-  padding: 12px 15px;
-  font-size: 1em;
-  background-color: var(--primary-color);
-  color: #fff;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: background-color 0.3s;
+	padding: 12px 15px;
+	font-size: 1em;
+	background-color: var(--primary-color);
+	color: #fff;
+	border: none;
+	border-radius: 8px;
+	cursor: pointer;
+	transition: background-color 0.3s;
 }
 
 .home-container button:hover {
-  background-color: var(--primary-dark-color);
+	background-color: var(--primary-dark-color);
 }
 
 @media (max-width: 600px) {
-  .home-container {
-    padding: 30px 20px;
-  }
+	.home-container {
+		padding: 30px 20px;
+	}
 
-  .home-container h2 {
-    font-size: 1.5em;
-  }
+	.home-container h2 {
+		font-size: 1.5em;
+	}
 
-  .home-container input,
-  .home-container button {
-    font-size: 0.9em;
-  }
+	.home-container input,
+	.home-container button {
+		font-size: 0.9em;
+	}
 }
 
 
 @media (max-width: 400px) {
-  .home-container {
-    padding: 20px 15px;
-  }
+	.home-container {
+		padding: 20px 15px;
+	}
 
-  .home-container h2 {
-    font-size: 1.2em;
-  }
+	.home-container h2 {
+		font-size: 1.2em;
+	}
 
-  .home-container input,
-  .home-container button {
-    font-size: 0.85em;
-  }
+	.home-container input,
+	.home-container button {
+		font-size: 0.85em;
+	}
 }
