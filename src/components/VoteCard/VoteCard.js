@@ -68,7 +68,9 @@ function VoteCard({ voteInfo, representatives }) {
                 </div>
             </div>
             <div className="rep-votes">
-                <p><strong>Your reps' votes:</strong></p>
+                {
+                    userRepVotes.length > 0 && <p><strong>Your reps' votes:</strong></p>
+                }
                 <div className="rep-votes-grid">
                     {userRepVotes.map((rep_vote) =>
                     (

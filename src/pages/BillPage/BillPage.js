@@ -118,7 +118,7 @@ const BillPage = () => {
 				<h2>Actions</h2>
 				{billData.actions && billData.actions.length > 0 ? (
 					<ul>
-						{billData.actions.map((action, index) => (
+						{[...billData.actions].reverse().map((action, index) => (
 							<li key={index}>
 								<strong>{new Date(action.date).toLocaleDateString()}:</strong> {action.description}
 							</li>
@@ -162,7 +162,7 @@ const BillPage = () => {
 				{billData.versions && billData.versions.length > 0 ? (
 					<ul className="bill-details-versions">
 						{uniqueVersionUrls.map((url, index) => (
-							<li>
+							<li key={index}>
 								<a href={url} target="_blank" rel="noopener noreferrer">
 									{url || 'Version'}
 								</a>

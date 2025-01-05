@@ -8,7 +8,8 @@ function RepCard({ rep }) {
         name,
         image,
         chamber,
-        current_district,
+        constituent_area,
+        jurisdiction_area,
         email,
         capitol_voice,
         district_voice,
@@ -35,7 +36,10 @@ function RepCard({ rep }) {
                     <strong>Chamber:</strong> {chamber}
                 </p>
                 <p>
-                    <strong>District:</strong> {current_district}
+                    <strong>Jurisdiction Area:</strong> {jurisdiction_area.name}
+                </p>
+                <p>
+                    <strong>Constituent Area:</strong> {constituent_area.name}
                 </p>
 
                 {email && (

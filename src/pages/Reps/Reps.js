@@ -75,6 +75,9 @@ function Reps() {
 			!federalReps.includes(rep) && !stateReps.includes(rep)
 	);
 
+	console.log("reps")
+	console.log(repsData);
+
 	return (
 		<div className="reps">
 			<h2>Representatives for {zipCode}</h2>
