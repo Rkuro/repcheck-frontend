@@ -19,6 +19,15 @@ function Sidebar({ isOpen, closeSidebar }) {
 					</li>
 					<li>
 						<NavLink
+							to="/about"
+							onClick={closeSidebar}
+							className={({ isActive }) => (isActive ? 'active' : '')}
+						>
+							About
+						</NavLink>
+					</li>
+					<li>
+						<NavLink
 							to="/bills"
 							onClick={closeSidebar}
 							className={({ isActive }) => (isActive ? 'active' : '')}

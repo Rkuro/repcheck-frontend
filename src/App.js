@@ -8,6 +8,7 @@ import Home from './pages/Home/Home';
 import Bills from './pages/Bills/Bills';
 import Reps from './pages/Reps/Reps';
 import BillPage from './pages/BillPage/BillPage';
+import AboutPage from './pages/AboutPage/AboutPage'
 import './index.css';
 
 function App() {
@@ -29,6 +30,7 @@ function App() {
         <div className="main-content">
           <Routes>
             <Route path="/" element={<Home />} />
+            <Route path="/about" element={<AboutPage />} />
             <Route path="/bills" element={<Bills />} />
             <Route path="/reps" element={<Reps />} />
             <Route path="/bill/:billId" element={<BillPage/>} />

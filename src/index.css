@@ -17,7 +17,7 @@
 
 body {
   margin: 0;
-  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-family: futura-pt, sans-serif;
   background-color: var(--background-color);
   color: var(--text-color);
 }
