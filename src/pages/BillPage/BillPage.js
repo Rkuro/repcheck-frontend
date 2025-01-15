@@ -7,6 +7,7 @@ import { getBill, getReps } from '../../services/repcheck_backend/api';
 import VoteCard from '../../components/VoteCard/VoteCard';
 import { startCase } from 'lodash';
 import { mapJurisdictionLevel } from '../../utils';
+import { useLocation } from "react-router-dom";
 
 const BillPage = () => {
 	const { billId } = useParams();
@@ -14,6 +15,8 @@ const BillPage = () => {
 	const [billData, setBillData] = useState(null);
 	const [repsData, setRepsData] = useState([]);
 	const [loading, setLoading] = useState(true);
+	const location = useLocation();
+
 
 	useEffect(() => {
 		const fetchData = async () => {
@@ -80,6 +83,13 @@ const BillPage = () => {
 
 	return (
 		<div className="bill-details-page" style={cardStyle}>
+			{/* Metadata tags */}
+			<title>{billData.title}</title>
+			<meta property="og:title" content={billData.title} />
+			<meta property="og:description" content="Check up on your legislators. This is a link to legislation!" />
+			<meta property="og:image" content="https://images.pexels.com/photos/4386426/pexels-photo-4386426.jpeg?auto=compress&cs=tinysrgb&w=1440&dpr=2" />
+			<meta property="og:url" content={window.location.origin + location.pathname} />
+
 			<div className="bill-details-header">
 				<span className="bill-level" style={badgeStyle}>
 					{level ? startCase(level) : 'UNKNOWN'}

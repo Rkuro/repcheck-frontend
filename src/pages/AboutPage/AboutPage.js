@@ -8,7 +8,6 @@ function FAQItem({faq}) {
         answer,
         links
     } = faq;
-    console.log(faq)
     const [isOpen, setIsOpen] = useState(false);
 
     const toggleFAQ = () => {
