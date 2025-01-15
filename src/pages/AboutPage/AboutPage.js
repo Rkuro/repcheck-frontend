@@ -47,7 +47,7 @@ function AboutPage() {
         },
         {
             question: "Why ZIP Codes?",
-            answer: "Everybody knows their zip code. Almost nobody knows their state senate district. It's much easier to anchor on a standard that folks already are familiar with rather than try and lead people the other direction. That said, there are endless ways to tie this data together in a usable way - suffice to say that this way does not require user authentication/authorization, address data, or any PII from users.",
+            answer: "Everybody knows their zip code. Almost nobody knows their state senate district. It's much easier to anchor on a standard that folks already are familiar with rather than try and lead people the other direction.",
         },
         {
             question: "Where does the data come from?",

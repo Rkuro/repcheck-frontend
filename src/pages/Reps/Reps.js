@@ -3,10 +3,11 @@ import React, { useContext, useState, useEffect } from 'react';
 import './Reps.css';
 import { ZipCodeContext } from '../../contexts/ZipCodeContext';
 import RepCard from '../../components/RepCard/RepCard';
-import { getReps } from '../../services/repcheck_backend/api';
+import { getReps, getZipCode } from '../../services/repcheck_backend/api';
 
 function Reps() {
 	const { zipCode } = useContext(ZipCodeContext);
+	const [zipCodeData, setZipCodeData] = useState(null)
 	const [repsData, setRepsData] = useState([]);
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState(null);
@@ -17,7 +18,9 @@ function Reps() {
 			try {
 				setLoading(true);
 				const reps = await getReps(zipCode);
+				const zipCodeData = await getZipCode(zipCode);
 				setRepsData(reps);
+				setZipCodeData(zipCodeData);
 			} catch (err) {
 				setError(err.message);
 			} finally {
@@ -75,8 +78,11 @@ function Reps() {
 			!federalReps.includes(rep) && !stateReps.includes(rep)
 	);
 
-	console.log("reps")
-	console.log(repsData);
+	const mapBoxZipCodeData = {
+		type: "Feature",
+		geometry: zipCodeData.geometry,
+		properties: {}
+	}
 
 	return (
 		<div className="reps">

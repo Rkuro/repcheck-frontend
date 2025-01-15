@@ -22,6 +22,7 @@ function Header({ toggleSidebar }) {
 					<div></div>
 				</div>
 				<h1>Repcheck</h1>
+				<div className='beta'>BETA</div>
 			</div>
 			{zipCode && (
 				<div className="zip-code-display">

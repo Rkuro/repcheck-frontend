@@ -70,3 +70,21 @@ export const getRepsById = async (repIds) => {
 		return error;
 	}
 }
+
+export const getZipCode = async (zip_code) => {
+
+	try {
+		const url = new URL(`${backendUrl}/api/zipcodes/${zip_code}`);
+		const response = await fetch(url, {
+			method: 'GET', headers: {
+			"Content-Type": "application/json", // Indicates we're sending JSON
+			"Accept": "application/json",        // Indicates we want JSON back
+		  }
+		});
+		const data = await response.json();
+		return data;
+	} catch (error) {
+		console.error('Error fetching zipcode:', error);
+		return error;
+	}
+}

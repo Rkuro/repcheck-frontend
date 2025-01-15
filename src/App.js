@@ -9,6 +9,7 @@ import Bills from './pages/Bills/Bills';
 import Reps from './pages/Reps/Reps';
 import BillPage from './pages/BillPage/BillPage';
 import AboutPage from './pages/AboutPage/AboutPage'
+import MapPage from './pages/MapPage/MapPage'
 import './index.css';
 
 function App() {
@@ -34,6 +35,8 @@ function App() {
             <Route path="/bills" element={<Bills />} />
             <Route path="/reps" element={<Reps />} />
             <Route path="/bill/:billId" element={<BillPage/>} />
+            {/* Secret map page */}\
+            <Route path="/secret/map" element={<MapPage />}/>
           </Routes>
         </div>
       </Router>

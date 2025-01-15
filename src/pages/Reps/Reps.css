@@ -4,11 +4,12 @@
 }
 
 .reps h2 {
+    margin: 3em;
     text-align: center;
 }
 
 .reps h3 {
-    margin: 2em 0;
+    margin: 3em 0;
     text-align: center;
 }
 
@@ -23,10 +24,6 @@
 
 
 @media (min-width: 600px) {
-
-    .reps h3 {
-        text-align: inherit;
-    }
 
     .reps-grid {
         grid-template-columns: repeat(2, 1fr);
