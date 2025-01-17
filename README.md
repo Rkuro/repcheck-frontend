@@ -47,6 +47,8 @@ More information on general react deployment: [https://facebook.github.io/create
 
 Send build bundle to server:
 ```bash
+npm run build
+
 scp -r build/* repcheck:/mnt/volume_nyc1_01/frontend/
 ```
 

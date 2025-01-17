@@ -71,6 +71,8 @@ function MapPage() {
         properties: {}
     }
 
+    console.log(zipCodeData)
+
     return (
         <div className="map-page">
             
