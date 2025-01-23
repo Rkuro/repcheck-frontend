@@ -62,7 +62,7 @@ function BillCard({ bill, representatives }) {
 						{level ? startCase(level) : 'UNKNOWN'}
 					</span>
 					<div className="bill-id-and-vote">
-						<p className="bill-identifier">{canonical_id || 'No Identifier'}</p>
+						<p className="bill-identifier">{latestActionDate ? new Date(latestActionDate).toLocaleDateString() : 'N/A'}</p>
 					</div>
 				</div>
 				<h2 className="bill-title">{title || 'No Title'}</h2>
@@ -70,7 +70,7 @@ function BillCard({ bill, representatives }) {
 					<strong>Latest Action:</strong> {latestActionDescription || 'N/A'}
 				</p>
 				<p className="bill-latest-action">
-					<strong>Latest Action Date:</strong> {latestActionDate ? new Date(latestActionDate).toLocaleDateString() : 'N/A'}
+					<strong>Bill Identifier:</strong> {canonical_id}
 				</p>
 				<p className="bill-sponsors">
 					<strong>Primary Sponsor:</strong> {primarySponsors}

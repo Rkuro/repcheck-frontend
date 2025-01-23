@@ -1,4 +1,4 @@
-import React, { useEffect, useContext, useState } from 'react';
+import React, { useEffect, useContext, useState, useCallback } from 'react';
 import { ZipCodeContext } from '../../contexts/ZipCodeContext';
 import { getReps, getZipCode } from '../../services/repcheck_backend/api';
 import Map, {Source, Layer} from 'react-map-gl';
@@ -12,6 +12,7 @@ function MapPage() {
     const [repsData, setRepsData] = useState([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
+    const [hoverInfo, setHoverInfo] = useState(null);
 
     useEffect(() => {
 
@@ -30,6 +31,16 @@ function MapPage() {
         };
         fetchData();
     }, [zipCode]);
+
+    const onHover = useCallback(event => {
+        const {
+          features,
+          point: {x, y}
+        } = event;
+        const hoveredFeature = features && features[0];
+    
+        setHoverInfo(hoveredFeature && {feature: hoveredFeature, x, y});
+    }, []);
 
 
     if (!zipCode) {
@@ -71,7 +82,14 @@ function MapPage() {
         properties: {}
     }
 
+    /**
+     * {
+    "type": "FeatureCollection",
+    "features": [
+     */
+
     console.log(zipCodeData)
+    console.log(repsData)
 
     return (
         <div className="map-page">
@@ -92,6 +110,8 @@ function MapPage() {
                     mapStyle="mapbox://styles/mapbox/light-v11"
                     attributionControl={false}
                     collectResourceTiming={false} // Disables telemetry
+                    interactiveLayerIds={['data']}
+                    onMouseMove={onHover}
                 >
                     <Source id="polygon-source" type="geojson" data={mapBoxZipCodeData}>
                         <Layer
@@ -103,6 +123,13 @@ function MapPage() {
                             }}
                         />
                     </Source>
+                    {hoverInfo && (
+                        <div className="tooltip" style={{left: hoverInfo.x, top: hoverInfo.y}}>
+                            <div>State: {hoverInfo.feature.properties.name}</div>
+                            <div>Median Household Income: {hoverInfo.feature.properties.value}</div>
+                            <div>Percentile: {(hoverInfo.feature.properties.percentile / 8) * 100}</div>
+                        </div>
+                    )}
                 </Map>
             </div>
         </div>

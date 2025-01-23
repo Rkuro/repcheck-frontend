@@ -26,11 +26,6 @@ function App() {
 
 	return (
 		<ZipCodeProvider>
-			<title>Repcheck</title>
-			<meta property="og:title" content="Repcheck" />
-			<meta property="og:description" content="Check up on your legislators." />
-			<meta property="og:image" content="https://images.pexels.com/photos/4386426/pexels-photo-4386426.jpeg?cs=srgb&dl=pexels-karolina-grabowska-4386426.jpg&fm=jpg&h=600&w=900&fit=crop" />
-			<meta property="og:url" content="https://repcheck.us" />
 			<Router>
 				<Header toggleSidebar={toggleSidebar} />
 				<Sidebar isOpen={isSidebarOpen} closeSidebar={closeSidebar} />

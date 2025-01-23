@@ -1,5 +1,5 @@
 import React, { useContext, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, NavLink } from 'react-router-dom';
 import { ZipCodeContext } from '../../contexts/ZipCodeContext';
 import './Home.css';
 
@@ -7,6 +7,15 @@ function Home() {
 	const { setZipCode } = useContext(ZipCodeContext);
 	const [inputZip, setInputZip] = useState('');
 	const navigate = useNavigate();
+
+	const handleUpdate = (e) => {
+		const inputValue = e.target.value;
+
+		// Allow only numeric values and limit to 5 digits
+		if (/^\d{0,5}$/.test(inputValue)) {
+			setInputZip(inputValue);
+		}
+	}
 
 	const handleSubmit = (e) => {
 		e.preventDefault();
@@ -20,15 +29,20 @@ function Home() {
 				<h2>Enter your zip code</h2>
 				<form onSubmit={handleSubmit}>
 					<input
-						type="text"
+						type="number"
 						id="zip-code"
 						value={inputZip}
-						onChange={(e) => setInputZip(e.target.value)}
+						onChange={handleUpdate}
 						required
-						maxLength="10"
 					/>
 					<button type="submit">Go</button>
 				</form>
+
+				<div className="home-about-link">
+					<NavLink to="/about">
+						Why? What is this site?
+					</NavLink>
+				</div>
 			</div>
 		</div>
 	);

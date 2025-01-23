@@ -66,6 +66,11 @@
 	background-color: var(--primary-dark-color);
 }
 
+.home-about-link {
+	text-align: center;
+    margin-top: 24px;
+}
+
 @media (max-width: 600px) {
 	.home-container {
 		padding: 30px 20px;
