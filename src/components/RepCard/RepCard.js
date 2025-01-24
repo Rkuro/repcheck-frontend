@@ -77,7 +77,7 @@ function RepCard({ rep }) {
             <div className='rep-card-content'>
                 <div className="rep-image-container">
                     <div className="rep-image">
-                        <img src={image || '/Person_Image_Placeholder.png'} alt={name} onError={handleImageError} />
+                        <img src={replaceUrlPrefix(image) || '/Person_Image_Placeholder.png'} alt={name} onError={handleImageError} />
                     </div>
                 </div>
                 <div className="rep-info">
