@@ -13,6 +13,10 @@ export function mapJurisdictionLevel(jurisdictionAreaId) {
 
 // unitedstates.io is no longer maintained
 export function replaceUrlPrefix(url) {
+
+    if (url === null || url === undefined) {
+        return url;
+    }
     const oldPrefix = "https://theunitedstates.io";
     const newPrefix = "https://unitedstates.github.io";
     
