@@ -3,6 +3,7 @@ import "./VoteCard.css"
 import { startCase } from "lodash";
 import { Check, X, AlertTriangle } from "react-feather"
 import { getRepsById } from "../../services/repcheck_backend/api";
+import { replaceUrlPrefix } from "../../utils";
 
 function VoteCard({ voteInfo, representatives }) {
 
@@ -77,7 +78,7 @@ function VoteCard({ voteInfo, representatives }) {
                         <div key={rep_vote.rep.id} className="voter-rep-vote">
                             <div className="vote-header">
                                 <div className="rep-image-small">
-                                    <img alt="Representative headshot" src={rep_vote.rep.image || '/Person_Image_Placeholder.png'} onError={handleImageError} />
+                                    <img alt="Representative headshot" src={replaceUrlPrefix(rep_vote.rep.image) || '/Person_Image_Placeholder.png'} onError={handleImageError} />
                                 </div>
                                 <div className="rep-vote">
                                     {rep_vote.vote.option === "yes" && (
@@ -100,7 +101,7 @@ function VoteCard({ voteInfo, representatives }) {
                                         <div className="rep-vote-vote">
                                             <p>{rep_vote.rep.name} voted neither for or against and was: "{startCase(rep_vote.vote.option)}"</p>
                                             <div>
-                                                <AlertTriangle size={24} color="yellow" />
+                                                <AlertTriangle size={24} color="orange" />
                                             </div>
                                         </div>
                                     )}

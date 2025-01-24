@@ -10,7 +10,7 @@
 .bills-header {
 	display: flex;
     justify-content: flex-end;
-    margin-bottom: 20px;
+	margin-bottom: 32px;
 }
 
 .filters-button {
@@ -60,7 +60,7 @@
 	display: flex;
 	flex-direction: column;
 	padding: 24px;
-	max-height: 500px;
+	max-height: 50vh;
 	overflow: scroll;
 }
 
@@ -99,14 +99,14 @@
 	display: grid;
 	grid-template-columns: 1fr;
 	grid-auto-rows: minmax(100px, auto);
-	grid-gap: 20px;
+	grid-gap: 40px 20px;
 }
 
 .pagination {
 	display: flex;
 	justify-content: center;
 	align-items: center;
-	margin-top: 20px;
+	margin-top: 40px;
 }
 
 .pagination button {

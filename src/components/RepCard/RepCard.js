@@ -1,6 +1,6 @@
-// components/RepCard/RepCard.js
 import React, { useState, useEffect } from 'react';
 import { startCase } from 'lodash';
+import { replaceUrlPrefix } from '../../utils';
 import './RepCard.css';
 
 function RepCard({ rep }) {
@@ -35,7 +35,7 @@ function RepCard({ rep }) {
                 reject(new Error(`Failed to load image from ${url}`));
             };
 
-            img.src = url;
+            img.src = replaceUrlPrefix(url);
         });
     };
 
