@@ -36,8 +36,7 @@ function App() {
 						<Route path="/bills" element={<Bills />} />
 						<Route path="/reps" element={<Reps />} />
 						<Route path="/bill/:billId" element={<BillPage />} />
-						{/* Secret map page */}\
-						<Route path="/secret/map" element={<MapPage />} />
+						<Route path="/map" element={<MapPage />} />
 					</Routes>
 				</div>
 			</Router>

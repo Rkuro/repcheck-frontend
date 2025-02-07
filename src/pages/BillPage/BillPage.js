@@ -1,13 +1,15 @@
 // BillPage.js
 import React, { useState, useEffect, useContext } from 'react';
 import { useParams } from 'react-router-dom';
+import { AlertTriangle } from 'react-feather';
 import './BillPage.css';
 import { ZipCodeContext } from '../../contexts/ZipCodeContext';
 import { getBill, getReps } from '../../services/repcheck_backend/api';
 import VoteCard from '../../components/VoteCard/VoteCard';
 import { startCase } from 'lodash';
-import { mapJurisdictionLevel } from '../../utils';
+import { mapAreaId } from '../../utils';
 import { useLocation } from "react-router-dom";
+import Markdown from 'react-markdown'
 
 const BillPage = () => {
 	const { billId } = useParams();
@@ -45,13 +47,16 @@ const BillPage = () => {
 	}
 
 	const {
+		ai_summary,
 		jurisdiction_area_id,
 		actions,
 		classification
 	} = billData;
 
+	console.log(billData)
+
 	// Determine the level based on the jurisdiction classification
-	const level = mapJurisdictionLevel(jurisdiction_area_id)
+	const level = mapAreaId(jurisdiction_area_id)
 
 	const levelColors = {
 		federal: 'var(--federal-color)',
@@ -75,7 +80,7 @@ const BillPage = () => {
 		)
 	);
 
-	const latestAction = actions.reduce(
+	const latestAction = actions.length > 0 && actions.reduce(
 		(latest, action) => new Date(action.date) > new Date(latest.date) ? action : latest
 	);
 	const latestActionDate = latestAction.date
@@ -108,6 +113,21 @@ const BillPage = () => {
 					<li><strong>Latest Action Date:</strong> {new Date(latestActionDate).toLocaleDateString()}</li>
 				</ul>
 			</div>
+
+			{
+				ai_summary && (
+					<div className='bill-ai-summary'>
+						<h2>Summary</h2>
+						<div className='bill-ai-summary-warning'>
+							<AlertTriangle size={14} color="orange"/> 
+							<p>This summary was AI generated.</p>
+						</div>
+						<Markdown>
+							{ai_summary.trim()}
+						</Markdown>
+					</div>
+				)
+			}
 
 			<div className="bill-details-section">
 				<h2>Sponsorships</h2>

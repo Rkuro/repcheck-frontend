@@ -127,3 +127,51 @@ export const getZipCode = async (zip_code) => {
 		return error;
 	}
 }
+
+
+/**
+ * Fetch precincts within `radiusMiles` miles of the ZIP code’s centroid.
+ * 
+ * @param {string} zipCode - The ZIP code to look up (e.g. "90210").
+ * @param {number} [radiusMiles=5.0] - The radius in miles (defaults to 5.0).
+ * @returns {Promise<object>} - Returns the JSON response or throws an error.
+ */
+export const getPrecincts = async (zipCode, radiusMiles = 5.0) => {
+	try {
+		// Construct the URL with query parameter "radius_miles"
+		const url = `${backendUrl}/api/precincts/${zipCode}?radius_miles=${radiusMiles}`;
+
+		const response = await fetch(url);
+		if (!response.ok) {
+			// You can throw a more descriptive error if needed
+			throw new Error(`Failed to fetch precincts: ${response.statusText}`);
+		}
+
+		// Convert response to JSON
+		const data = await response.json();
+
+		// The backend response should look like:
+		// {
+		//   "zip_code": <string>,
+		//   "radius_miles": <number>,
+		//   "count": <number>,
+		//   "precincts": [ { ... }, { ... } ],
+		//   "error": <string?>  // possibly
+		// }
+		// You can do additional data checks as needed
+		return data;
+	} catch (error) {
+		console.error("Error in getPrecincts:", error);
+		throw error; // Re-throw so your caller can handle it
+	}
+};
+
+
+export const getAreaGeometry = async (area_id) => {
+	const url = `${backendUrl}/api/areas/${encodeURIComponent(area_id)}`;
+	const response = await fetch(url);
+	if (!response.ok) {
+		throw new Error(`Failed to fetch area geometry: ${response.statusText}`);
+	}
+	return await response.json(); // Should contain { area_id, geometry, error }
+};

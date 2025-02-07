@@ -1,7 +1,7 @@
 // BillCard.js
 import React from 'react';
 import './BillCard.css';
-import { mapJurisdictionLevel } from '../../utils';
+import { mapAreaId } from '../../utils';
 import VoteCard from '../VoteCard/VoteCard';
 import { startCase } from 'lodash';
 import { NavLink } from 'react-router-dom';
@@ -18,7 +18,7 @@ function BillCard({ bill, representatives }) {
 		votes
 	} = bill;
 
-	const level = mapJurisdictionLevel(jurisdiction_area_id);
+	const level = mapAreaId(jurisdiction_area_id);
 
 	const levelColors = {
 		federal: 'var(--federal-color)',
@@ -39,7 +39,7 @@ function BillCard({ bill, representatives }) {
 		? sponsorships.filter((s) => s.primary).map((s) => s.name).join(', ')
 		: 'N/A';
 
-	const latestAction = actions.reduce(
+	const latestAction = actions.length > 0 && actions.reduce(
 		(latest, action) => new Date(action.date) > new Date(latest.date) ? action : latest
 	);
 	const latestActionDate = latestAction.date
@@ -53,7 +53,6 @@ function BillCard({ bill, representatives }) {
 		);
 	}
 
-
 	return (
 		<NavLink to={`/bill/${encodeURIComponent(id)}`} className="bill-card-nav" style={cardStyle}>
 			<div className="bill-card">
@@ -62,7 +61,7 @@ function BillCard({ bill, representatives }) {
 						{level ? startCase(level) : 'UNKNOWN'}
 					</span>
 					<div className="bill-id-and-vote">
-						<p className="bill-identifier">{latestActionDate ? new Date(latestActionDate).toLocaleDateString() : 'N/A'}</p>
+						<p className="bill-identifier">{latestActionDate ? new Date(latestActionDate).toLocaleDateString() : 'No actions recorded'}</p>
 					</div>
 				</div>
 				<h2 className="bill-title">{title || 'No Title'}</h2>

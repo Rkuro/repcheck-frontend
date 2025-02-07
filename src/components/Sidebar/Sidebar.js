@@ -44,6 +44,15 @@ function Sidebar({ isOpen, closeSidebar }) {
 							Reps
 						</NavLink>
 					</li>
+					<li>
+						<NavLink
+							to="/map"
+							onClick={closeSidebar}
+							className={({ isActive }) => (isActive ? 'active' : '')}
+						>
+							Map
+						</NavLink>
+					</li>
 				</ul>
 			</nav>
 			{isOpen && <div className="overlay" onClick={closeSidebar}></div>}
