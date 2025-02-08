@@ -2,8 +2,8 @@
     padding: 20px;
 }
 
-.map-page h2 {
-    margin: 3em;
+.map-page h1 {
+    padding-top: 40px;
     text-align: center;
 }
 
@@ -19,11 +19,9 @@
 }
 
 
-/* .map-page {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-} */
+.main-content {
+    padding: 0;
+}
 
 .legend-wrapper {
     display: flex;
@@ -72,18 +70,22 @@
 }
 
 .citations {
-    padding: 8px;
+    padding: 40px;
+    font-size: 12px;
+}
+
+.horizontal-divide {
+    /* margin: 8px 0; */
+    border-top: 1px solid var(--default-color);
 }
 
 
-.legend {
-    padding: 8px
+.map-description {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
 }
 
-.legend label {
-    padding: 8px;
-}
-
-.legend input {
-    margin: 8px;
+.map-page-faqs {
+    padding: 5vw;
 }

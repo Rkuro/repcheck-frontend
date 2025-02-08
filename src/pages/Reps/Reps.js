@@ -34,7 +34,7 @@ function Reps() {
 		return (
 			<div className="reps">
 				<h2>Representatives</h2>
-				<p>Please enter your zip code to view your representatives.</p>
+				<p>Please enter your zip code on the home page to view your representatives.</p>
 			</div>
 		);
 	}

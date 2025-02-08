@@ -136,7 +136,7 @@ export const getZipCode = async (zip_code) => {
  * @param {number} [radiusMiles=5.0] - The radius in miles (defaults to 5.0).
  * @returns {Promise<object>} - Returns the JSON response or throws an error.
  */
-export const getPrecincts = async (zipCode, radiusMiles = 5.0) => {
+export const getPrecincts = async (zipCode, radiusMiles = 10.0) => {
 	try {
 		// Construct the URL with query parameter "radius_miles"
 		const url = `${backendUrl}/api/precincts/${zipCode}?radius_miles=${radiusMiles}`;

@@ -1,38 +1,7 @@
-import React, { useState } from 'react';
-import { ChevronDown, ChevronUp } from 'react-feather';
+import React from 'react';
 import './AboutPage.css';
+import FAQItem from '../../components/FAQItem/FAQItem';
 
-function FAQItem({faq}) {
-    const {
-        question,
-        answer,
-        links
-    } = faq;
-    const [isOpen, setIsOpen] = useState(false);
-
-    const toggleFAQ = () => {
-        setIsOpen(!isOpen);
-    };
-
-    return (
-        <div className="faq-item" onClick={toggleFAQ}>
-            <div className="faq-question">
-                <h3>{question}</h3>
-                <span>{isOpen ? <ChevronUp/> : <ChevronDown />}</span>
-            </div>
-            {isOpen && (
-                <div className="faq-answer">
-                    <div>{answer}</div>
-                    <div className='faq-links'>
-                        {links && links.map(link => (
-                            <a href={link.url} className='faq-link'>{link.note}</a>
-                        ))}
-                    </div>
-                </div>
-            )}
-        </div>
-    );
-}
 
 function AboutPage() {
     const faqs = [

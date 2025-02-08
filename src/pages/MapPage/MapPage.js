@@ -11,29 +11,8 @@ import {
 import Map, { Source, Layer, ScaleControl } from 'react-map-gl';
 import { mapBoxToken } from '../../config';
 import './MapPage.css';
-import { startCase } from 'lodash';
+import FAQItem from '../../components/FAQItem/FAQItem';
 
-/*
-  Classify area ID for constituent lines.
-*/
-function getClassification(areaId) {
-    if (areaId === 'ocd-division/country:us') {
-        return 'federal';
-    }
-    if (areaId.match(/^ocd-division\/country:us\/state:[a-z]{2}$/)) {
-        return 'state';
-    }
-    if (areaId.match(/^ocd-division\/country:us\/state:[a-z]{2}\/cd:.*/)) {
-        return 'federal congressional district';
-    }
-    if (areaId.match(/^ocd-division\/country:us\/state:[a-z]{2}\/sldu:.*/)) {
-        return 'state senate district';
-    }
-    if (areaId.match(/^ocd-division\/country:us\/state:[a-z]{2}\/sldl:.*/)) {
-        return 'state house district';
-    }
-    return 'local';
-}
 
 /*
   For precinct fill:
@@ -126,7 +105,7 @@ function MapPage() {
         x: 0,
         y: 0,
         hoveredZipId: null,
-        hoveredConstituentId: null,
+        hoveredConstituentIds: [],
         hoveredPrecinctId: null,
         features: []
     });
@@ -154,7 +133,7 @@ function MapPage() {
                 setZipCodeData(zipResponse);
 
                 // 3) Precincts
-                const precinctsResponse = await getPrecincts(zipCode, 5);
+                const precinctsResponse = await getPrecincts(zipCode, 10);
                 setPrecinctsData(precinctsResponse);
 
                 // 4) Constituent areas
@@ -164,14 +143,13 @@ function MapPage() {
                         try {
                             const areaGeo = await getAreaGeometry(rep.constituent_area_id);
                             if (!areaGeo.error && areaGeo.geometry) {
-                                const classification = getClassification(areaGeo.area_id);
                                 fetchedFeatures.push({
                                     type: 'Feature',
                                     geometry: areaGeo.geometry,
                                     properties: {
                                         representative_name: rep.name,
+                                        constituent_area: rep.constituent_area,
                                         area_id: areaGeo.area_id,
-                                        classification
                                     }
                                 });
                             }
@@ -204,7 +182,7 @@ function MapPage() {
             setHoverInfo({
                 x, y,
                 hoveredZipId: null,
-                hoveredConstituentId: null,
+                hoveredConstituentIds: [],
                 hoveredPrecinctId: null,
                 features: []
             });
@@ -215,14 +193,15 @@ function MapPage() {
         // Because precinct fill is also interactive (for the actual color).
         let zipFill = features.find(f => f.layer.id === 'zip-fill-layer');
         let precinctFill = features.find(f => f.layer.id === 'precincts-fill-layer');
-        let constituentFill = features.find(f => f.layer.id === 'constituent-fill-layer');
+        let constituentFills = features.filter(f => f.layer.id === 'constituent-fill-layer');
+        let hoveredConstituentIds = constituentFills.map(cf => cf.properties.area_id);
 
-        console.log(zipFill)
+
         setHoverInfo({
             x,
             y,
             hoveredZipId: zipFill ? zipFill.properties.area_id : null,
-            hoveredConstituentId: constituentFill ? constituentFill.properties.area_id : null,
+            hoveredConstituentIds,
             hoveredPrecinctId: precinctFill ? precinctFill.properties.precinct_id : null,
             features
         });
@@ -230,7 +209,7 @@ function MapPage() {
 
     // Early returns
     if (!zipCode) {
-        return <div className="map-page"><h2>Please enter a ZIP code.</h2></div>;
+        return <div className="map-page"><p>Please enter a ZIP code on the home page.</p></div>;
     }
     if (loading) {
         return <div className="map-page"><p>Loading data...</p></div>;
@@ -290,81 +269,78 @@ function MapPage() {
         'constituent-fill-layer'
     ];
 
+    const faqs = [
+        {
+            question: "What am I looking at?",
+            answer: "This interactive map focuses on your zip code and its relationship with federal and state districts. It shows you three things. 1) Your zip code area, 2) Which areas are included in your representatives' districts and 3) How your neighbors voted in the 2024 federal election.",
+        },
+        {
+            question: "Data Overlays",
+            answer: "You can toggle on/off each data overlay. There are three data overlays. 1) Your zip code - this simply shows you where you live. 2) The Federal Election results overlay from The New York Times. When enabled, blue or red tiles will appear within 10 miles of your zip code. More blue = more democratic votes, more red = more republican votes.  3) The legislative district overlay. This shows which federal and state districts overlap with your zip code and who represents them as you hover over them with your mouse.",
+        },
+    ];
+
+
     return (
         <div className="map-page">
-            <h2>Map of {zipCode}</h2>
-
-            <div className="legend">
-                <label>
-                    <input
-                        type="checkbox"
-                        checked={showZip}
-                        onChange={(e) => setShowZip(e.target.checked)}
-                    />
-                    Show ZIP
-                </label>
-                &nbsp;&nbsp;
-                <label>
-                    <input
-                        type="checkbox"
-                        checked={showPrecincts}
-                        onChange={(e) => setShowPrecincts(e.target.checked)}
-                    />
-                    Show Federal Election 2024 Results
-                </label>
-                &nbsp;&nbsp;
-                <label>
-                    <input
-                        type="checkbox"
-                        checked={showConstituent}
-                        onChange={(e) => setShowConstituent(e.target.checked)}
-                    />
-                    Show Legislator Districts
-                </label>
-            </div>
-
+            <h1>Map of {zipCode}</h1>
             <div className="map-container">
                 <Map
                     mapboxAccessToken={mapBoxToken}
                     initialViewState={initialViewState}
-                    style={{ height: '60vh', width: '100%' }}
+                    style={{ height: '65vh', width: '100%' }}
                     mapStyle="mapbox://styles/mapbox/light-v11"
-                    attributionControl={false}
                     collectResourceTiming={false}
                     interactiveLayerIds={interactiveLayerIds}
                     onMouseMove={onHover}
                 >
                     <ScaleControl unit="imperial" />
 
-                    {/* ZIP source (one feature) */}
-                    <Source id="zip-source" type="geojson" data={zipFeature}>
-
-                        {/* 1) Invisible fill for interaction */}
-                        <Layer
-                            id="zip-fill-layer"
-                            type="fill"
-                            paint={{
-                                'fill-color': '#000000',
-                                'fill-opacity': 0
-                            }}
-                            layout={{
-                                visibility: showZip ? 'visible' : 'none'
-                            }}
-                        />
-
-                        {/* 2) Visible line for boundary */}
-                        <Layer
-                            id="zip-line-layer"
-                            type="line"
-                            paint={{
-                                'line-color': '#088',
-                                'line-width': 2
-                            }}
-                            layout={{
-                                visibility: showZip ? 'visible' : 'none'
-                            }}
-                        />
-                    </Source>
+                    {/* 
+                    This is the absolute-positioned div that will appear
+                    on top of the map. 
+                    */}
+                    <div
+                        style={{
+                            position: 'absolute',
+                            top: 10,
+                            left: 10,
+                            zIndex: 1,
+                            backgroundColor: 'white',
+                            padding: '8px',
+                            borderRadius: '4px',
+                            boxShadow: '0 1px 4px rgba(0,0,0,0.3)'
+                        }}
+                    >
+                        <strong>Toggle Data Overlay:</strong>
+                        <label style={{ display: 'block', marginBottom: '4px' }}>
+                            <input
+                                type="checkbox"
+                                checked={showZip}
+                                onChange={(e) => setShowZip(e.target.checked)}
+                                style={{ marginRight: '8px' }}
+                            />
+                            ZIP Code
+                        </label>
+                        <label style={{ display: 'block', marginBottom: '4px' }}>
+                            <input
+                                type="checkbox"
+                                checked={showPrecincts}
+                                onChange={(e) => setShowPrecincts(e.target.checked)}
+                                style={{ marginRight: '8px' }}
+                            />
+                            Federal Election 2024 Results
+                        </label>
+                        <label style={{ display: 'block' }}>
+                            <input
+                                type="checkbox"
+                                checked={showConstituent}
+                                onChange={(e) => setShowConstituent(e.target.checked)}
+                                style={{ marginRight: '8px' }}
+                            />
+                            Legislator Districts
+                        </label>
+                    </div>
 
                     {/* Precincts fill */}
                     {precinctsFeatureCollection.features.length > 0 && (
@@ -454,49 +430,113 @@ function MapPage() {
                                 'line-color': '#000',
                                 'line-width': 4
                             }}
+                            /*
+                                For multiple area IDs, use 'in' expression:
+                                ['in', ['get', 'area_id'], ['literal', [...]] ]
+                            */
                             filter={[
-                                '==',
+                                'in',
                                 ['get', 'area_id'],
-                                hoverInfo.hoveredConstituentId || ''
+                                ['literal', hoverInfo.hoveredConstituentIds]
                             ]}
                         />
                     )}
 
+                    {/* ZIP source (one feature) */}
+                    <Source id="zip-source" type="geojson" data={zipFeature}>
+
+                        {/* 1) Invisible fill for interaction */}
+                        <Layer
+                            id="zip-fill-layer"
+                            type="fill"
+                            paint={{
+                                'fill-color': '#000000',
+                                'fill-opacity': 0
+                            }}
+                            layout={{
+                                visibility: showZip ? 'visible' : 'none'
+                            }}
+                        />
+
+                        {/* 2) Visible line for boundary */}
+                        <Layer
+                            id="zip-line-layer"
+                            type="line"
+                            paint={{
+                                'line-color': '#088',
+                                'line-width': 2
+                            }}
+                            layout={{
+                                visibility: showZip ? 'visible' : 'none'
+                            }}
+                        />
+                    </Source>
+
                     {/* Tooltip */}
                     {hoverInfo.features.length > 0 && (
-                        <div
-                            className="tooltip"
-                            style={{ left: hoverInfo.x, top: hoverInfo.y }}
-                        >
-                            {hoverInfo.features.map((feat, i) => {
-                                const layerId = feat.layer.id;
-                                const props = feat.properties;
+                        <div className="tooltip" style={{ left: hoverInfo.x, top: hoverInfo.y }}>
+                            {[...hoverInfo.features]
+                                .filter((obj) => "layer" in obj)
+                                .map((feat) => {
+                                    const layerId = feat.layer.id;
+                                    const props = feat.properties;
 
-                                if (layerId === 'zip-fill-layer') {
-                                    return (
-                                        <div key={i}>
-                                            <div>Zip Code: {props.area_id}</div>
-                                        </div>
-                                    );
-                                } else if (layerId === 'precincts-fill-layer') {
-                                    return (
-                                        <div key={i}>
-                                            <div>Dem votes: {props.votes_dem}</div>
-                                            <div>Rep votes: {props.votes_rep}</div>
-                                        </div>
-                                    );
-                                } else if (layerId === 'constituent-fill-layer') {
-                                    return (
-                                        <div key={i}>
-                                            <div>{startCase(props.classification)}: {props.representative_name}</div>
-                                        </div>
-                                    );
-                                }
-                                return null;
-                            })}
+                                    // We'll derive an alphabetical `sortKey` and
+                                    // the JSX `content` for each feature.
+                                    let sortKey = '';
+                                    let content = null;
+
+                                    if (layerId === 'zip-fill-layer') {
+                                        sortKey = 'Zip Code'; // we can label it simply "Zip Code"
+                                        content = (
+                                            <div className="horizontal-divide">
+                                                <strong>{sortKey}:</strong> {props.area_id}
+                                            </div>
+                                        );
+                                    } else if (layerId === 'precincts-fill-layer') {
+                                        sortKey = 'Precinct'; // or “Precinct Results”
+                                        content = (
+                                            <div className="horizontal-divide">
+                                                <strong>2024 Federal Election Results</strong> <br/>
+                                                <strong>Dem votes:</strong> {props.votes_dem} <br />
+                                                <strong>Rep votes:</strong> {props.votes_rep}
+                                            </div>
+                                        );
+                                    } else if (layerId === 'constituent-fill-layer') {
+                                        const constituent_area = JSON.parse(props.constituent_area);
+                                        sortKey = constituent_area.name; // e.g. "State Senate District"
+                                        content = (
+                                            <div >
+                                                <strong>{constituent_area.name}:</strong> {props.representative_name}
+                                            </div>
+                                        );
+                                    }
+
+                                    return { sortKey, content };
+                                })
+                                // 2) Sort alphabetically by `sortKey`
+                                .sort((a, b) => {
+                                    return a.sortKey.localeCompare(b.sortKey);
+                                })
+                                // 3) Render
+                                .map((item, i) => (
+                                    <div key={i} style={{ marginBottom: '4px' }}>
+                                        {item.content}
+                                    </div>
+                                ))}
                         </div>
                     )}
                 </Map>
+            </div>
+
+            <div className="map-page-faqs">
+                {faqs.map((faq, index) => (
+                    <FAQItem key={index} faq={faq} />
+                ))}
+            </div>
+
+            <div className="citations">
+                "2024 Precinct-Level Election Results." New York Times, <a rel="noopener" href="https://www.nytimes.com/interactive/2025/us/elections/2024-election-map-precinct-results.html">https://www.nytimes.com/interactive/2025/us/elections/2024-election-map-precinct-results.html</a> Accessed {new Date().toLocaleDateString()}.
             </div>
         </div>
     );
