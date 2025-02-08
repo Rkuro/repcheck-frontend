@@ -68,10 +68,10 @@ const constituentLinePaint = {
         'match',
         ['get', 'classification'],
         'federal', '#b4e4e4',
-        'state', '#c8b49d',
-        'federal congressional district', '#525174',
-        'state senate district', '#037171',
-        'state house district', '#FE938C',
+        'federal_senate_district', '#c8b49d',
+        'federal_house_district', '#525174',
+        'state_senate_district', '#037171',
+        'state_house_district', '#FE938C',
         'local', '#ccccff',
         /* fallback */
         '#cccccc'
@@ -143,6 +143,7 @@ function MapPage() {
                         try {
                             const areaGeo = await getAreaGeometry(rep.constituent_area_id);
                             if (!areaGeo.error && areaGeo.geometry) {
+                                console.log(rep.constituent_area)
                                 fetchedFeatures.push({
                                     type: 'Feature',
                                     geometry: areaGeo.geometry,
@@ -150,6 +151,7 @@ function MapPage() {
                                         representative_name: rep.name,
                                         constituent_area: rep.constituent_area,
                                         area_id: areaGeo.area_id,
+                                        classification: rep.constituent_area.classification
                                     }
                                 });
                             }
@@ -427,7 +429,7 @@ function MapPage() {
                             type="line"
                             source="constituent-source"
                             paint={{
-                                'line-color': '#000',
+                                ...constituentLinePaint,
                                 'line-width': 4
                             }}
                             /*
