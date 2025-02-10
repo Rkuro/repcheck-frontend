@@ -292,8 +292,6 @@ function MapPage() {
         },
     ];
 
-    console.log(hoverInfo)
-
     return (
         <div className="map-page">
             <h1>Map of {zipCode}</h1>

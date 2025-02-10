@@ -53,8 +53,6 @@ const BillPage = () => {
 		classification
 	} = billData;
 
-	console.log(billData)
-
 	// Determine the level based on the jurisdiction classification
 	const level = mapAreaId(jurisdiction_area_id)
 
