@@ -512,9 +512,11 @@ function MapPage() {
                                         sortKey = 'Precinct'; // or “Precinct Results”
                                         content = (
                                             <div className="tooltip-item">
-                                                <strong>2024 Federal Election Results</strong> <br />
-                                                <strong>Dem votes:</strong> {props.votes_dem} <br />
-                                                <strong>Rep votes:</strong> {props.votes_rep}
+                                                <div className="election-results">
+                                                    <strong>2024 Federal Election Results</strong>
+                                                    <p><strong>Dem votes:</strong> {props.votes_dem}</p>
+                                                    <p><strong>Rep votes:</strong> {props.votes_rep}</p>
+                                                </div>
                                             </div>
                                         );
                                     } else if (layerId === 'constituent-fill-layer') {

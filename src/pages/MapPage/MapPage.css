@@ -94,6 +94,17 @@
     border-radius: 2px;
 }
 
+.election-results {
+    display: flex;
+    flex-direction: column;
+    margin: 8px 0;
+    padding: 8px 0;
+}
+
+.election-results p {
+    margin: 0;
+}
+
 .horizontal-divide {
     border-top: 1px solid var(--default-color);
 }
