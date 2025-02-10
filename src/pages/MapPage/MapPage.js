@@ -45,6 +45,17 @@ const precinctFillPaint = {
     ]
 };
 
+
+// Mapping from classification to color
+const backgroundColorMap = {
+    'federal': '#b4e4e4',
+    'federal_senate_district': '#c8b49d',
+    'federal_house_district': '#525174',
+    'state_senate_district': '#037171',
+    'state_house_district': '#FE938C',
+    'local': '#ccccff'
+}
+
 /*
   We'll keep the ZIP / Constituent boundaries as lines with color-coded classification for the constituent lines.
   ZIP boundary can be a single color. 
@@ -491,15 +502,15 @@ function MapPage() {
                                     if (layerId === 'zip-fill-layer') {
                                         sortKey = 'Zip Code'; // we can label it simply "Zip Code"
                                         content = (
-                                            <div className="horizontal-divide">
+                                            <div className="tooltip-item">
                                                 <strong>{sortKey}:</strong> {props.area_id}
                                             </div>
                                         );
                                     } else if (layerId === 'precincts-fill-layer') {
                                         sortKey = 'Precinct'; // or “Precinct Results”
                                         content = (
-                                            <div className="horizontal-divide">
-                                                <strong>2024 Federal Election Results</strong> <br/>
+                                            <div className="tooltip-item">
+                                                <strong>2024 Federal Election Results</strong> <br />
                                                 <strong>Dem votes:</strong> {props.votes_dem} <br />
                                                 <strong>Rep votes:</strong> {props.votes_rep}
                                             </div>
@@ -508,8 +519,13 @@ function MapPage() {
                                         const constituent_area = JSON.parse(props.constituent_area);
                                         sortKey = constituent_area.name; // e.g. "State Senate District"
                                         content = (
-                                            <div >
-                                                <strong>{constituent_area.name}:</strong> {props.representative_name}
+                                            <div className="tooltip-item">
+                                                <div className="constituent-tooltip-color"
+                                                    style={{ backgroundColor: backgroundColorMap[props.classification] }} />
+                                                
+                                                <p>
+                                                    <strong>{constituent_area.name}:</strong> {props.representative_name}
+                                                </p>
                                             </div>
                                         );
                                     }
@@ -522,7 +538,7 @@ function MapPage() {
                                 })
                                 // 3) Render
                                 .map((item, i) => (
-                                    <div key={i} style={{ marginBottom: '4px' }}>
+                                    <div key={i}>
                                         {item.content}
                                     </div>
                                 ))}

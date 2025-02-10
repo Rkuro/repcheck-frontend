@@ -74,8 +74,27 @@
     font-size: 12px;
 }
 
+.tooltip {
+    padding: 8px;
+}
+
+.tooltip-item {
+    display: flex;
+    align-items: center;
+}
+
+.tooltip-item p {
+    margin: 4px;
+}
+
+.constituent-tooltip-color {
+    width: 20px;
+    height: 20px;
+    margin-right: 8px;
+    border-radius: 2px;
+}
+
 .horizontal-divide {
-    /* margin: 8px 0; */
     border-top: 1px solid var(--default-color);
 }
 
