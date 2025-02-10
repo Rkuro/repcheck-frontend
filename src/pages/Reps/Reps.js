@@ -78,12 +78,6 @@ function Reps() {
 			!federalReps.includes(rep) && !stateReps.includes(rep)
 	);
 
-	const mapBoxZipCodeData = {
-		type: "Feature",
-		geometry: zipCodeData.geometry,
-		properties: {}
-	}
-
 	return (
 		<div className="reps">
 			<h2>Representatives for {zipCode}</h2>

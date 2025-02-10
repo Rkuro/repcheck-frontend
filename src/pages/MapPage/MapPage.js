@@ -154,7 +154,6 @@ function MapPage() {
                         try {
                             const areaGeo = await getAreaGeometry(rep.constituent_area_id);
                             if (!areaGeo.error && areaGeo.geometry) {
-                                console.log(rep.constituent_area)
                                 fetchedFeatures.push({
                                     type: 'Feature',
                                     geometry: areaGeo.geometry,
@@ -293,6 +292,7 @@ function MapPage() {
         },
     ];
 
+    console.log(hoverInfo)
 
     return (
         <div className="map-page">
@@ -476,7 +476,7 @@ function MapPage() {
                             id="zip-line-layer"
                             type="line"
                             paint={{
-                                'line-color': '#088',
+                                'line-color': '#44638c',
                                 'line-width': 2
                             }}
                             layout={{
@@ -503,7 +503,9 @@ function MapPage() {
                                         sortKey = 'Zip Code'; // we can label it simply "Zip Code"
                                         content = (
                                             <div className="tooltip-item">
-                                                <strong>{sortKey}:</strong> {props.area_id}
+                                                <div className="constituent-tooltip-color"
+                                                    style={{ backgroundColor: "#44638c" }} />
+                                                <p><strong>{sortKey}:</strong> {props.area_id}</p>
                                             </div>
                                         );
                                     } else if (layerId === 'precincts-fill-layer') {

@@ -52,18 +52,6 @@ function RepCard({ rep }) {
         getImageSize();
     }, [image]);
 
-    // Dynamically calculate style
-    const getDynamicStyle = () => {
-        if (!dimensions) return {};
-        const aspectRatio = dimensions.width / dimensions.height;
-
-        return {
-            maxWidth: aspectRatio > 1 ? '100%' : '50%', // Wider images take full width, taller ones half-width
-            maxHeight: aspectRatio > 1 ? '50%' : '100%', // Adjust height proportionally
-            border: '1px solid #ccc',
-        };
-    };
-
     const handleImageError = (e) => {
         e.target.onerror = null; // Prevents looping
         e.target.src = '/Person_Image_Placeholder.png'; // Place your placeholder image in the public folder
