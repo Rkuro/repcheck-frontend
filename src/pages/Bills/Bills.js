@@ -6,6 +6,7 @@ import './Bills.css';
 import backendUrl from '../../config';
 import { getBillsByZip } from '../../services/repcheck_backend/api';
 import { Sliders } from 'react-feather';
+import { useNavigate } from 'react-router-dom';
 import Select from 'react-select';
 
 function Bills() {
@@ -30,12 +31,15 @@ function Bills() {
 	const [sortBy, setSortBy] = useState('latest_action_date');
 	const [sortOrder, setSortOrder] = useState('desc');
 
+	const navigate = useNavigate();
+
 	useEffect(() => {
 		if (zipCode) {
 			fetchRepresentatives(zipCode);
 			fetchBills();
+		} else {
+			navigate('/change-zip');
 		}
-		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [zipCode, currentPage]);
 
 	// Fetch your representatives for the multi-select

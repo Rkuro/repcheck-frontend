@@ -4,6 +4,7 @@ import './Reps.css';
 import { ZipCodeContext } from '../../contexts/ZipCodeContext';
 import RepCard from '../../components/RepCard/RepCard';
 import { getReps, getZipCode } from '../../services/repcheck_backend/api';
+import { useNavigate } from 'react-router-dom';
 
 function Reps() {
 	const { zipCode } = useContext(ZipCodeContext);
@@ -11,8 +12,14 @@ function Reps() {
 	const [repsData, setRepsData] = useState([]);
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState(null);
+	const navigate = useNavigate();
 
 	useEffect(() => {
+
+		if (!zipCode) {
+			navigate('/change-zip');
+			return;
+		}
 
 		const fetchData = async () => {
 			try {

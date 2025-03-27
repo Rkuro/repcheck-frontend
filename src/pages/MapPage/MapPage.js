@@ -12,7 +12,7 @@ import Map, { Source, Layer, ScaleControl } from 'react-map-gl';
 import { mapBoxToken } from '../../config';
 import './MapPage.css';
 import FAQItem from '../../components/FAQItem/FAQItem';
-
+import { useNavigate } from 'react-router-dom';
 
 /*
   For precinct fill:
@@ -28,25 +28,24 @@ const precinctFillPaint = {
     ],
     'fill-opacity': [
         'case',
-        // If DEM > REP => (dem / (dem+rep)) * 0.5
+        // If DEM > REP => (dem / (dem+rep)) * 0.6
         ['>', ['get', 'votes_dem'], ['get', 'votes_rep']],
         ['*',
             ['/', ['get', 'votes_dem'], ['+', ['get', 'votes_dem'], ['get', 'votes_rep']]],
             0.6
         ],
-        // If REP > DEM => (rep / (dem+rep)) * 0.5
+        // If REP > DEM => (rep / (dem+rep)) * 0.6
         ['>', ['get', 'votes_rep'], ['get', 'votes_dem']],
         ['*',
             ['/', ['get', 'votes_rep'], ['+', ['get', 'votes_dem'], ['get', 'votes_rep']]],
             0.6
         ],
-        // Tie => 0.5 * 0.5 = 0.25 or just a constant
+        // Tie => constant
         0.25
     ]
 };
 
-
-// Mapping from classification to color
+// Colors for each classification
 const backgroundColorMap = {
     'federal': '#b4e4e4',
     'federal_senate_district': '#c8b49d',
@@ -54,26 +53,8 @@ const backgroundColorMap = {
     'state_senate_district': '#037171',
     'state_house_district': '#FE938C',
     'local': '#ccccff'
-}
+};
 
-/*
-  We'll keep the ZIP / Constituent boundaries as lines with color-coded classification for the constituent lines.
-  ZIP boundary can be a single color. 
-*/
-
-/* 
-  We'll highlight lines on hover with separate highlight layers.
-*/
-
-/*
-  For the constituent lines, color by classification:
-  - federal => #b4e4e4
-  - state => #c8b49d
-  - federal congressional district => #525174
-  - state senate district => #037171
-  - state house district => #FE938C
-  - local => #ccccff
-*/
 const constituentLinePaint = {
     'line-color': [
         'match',
@@ -90,9 +71,9 @@ const constituentLinePaint = {
     'line-width': 2
 };
 
-
 function MapPage() {
     const { zipCode } = useContext(ZipCodeContext);
+    const navigate = useNavigate();
 
     // Data
     const [zipCodeData, setZipCodeData] = useState(null);
@@ -104,14 +85,7 @@ function MapPage() {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
 
-    /*
-      Hover info: we store which feature is hovered so we can highlight the boundary lines.
-      We'll store:
-        hoveredZipId,
-        hoveredConstituentId,
-        hoveredPrecinctId,
-      etc.
-    */
+    // Hover info
     const [hoverInfo, setHoverInfo] = useState({
         x: 0,
         y: 0,
@@ -124,11 +98,18 @@ function MapPage() {
     // Toggles
     const [showZip, setShowZip] = useState(true);
     const [showPrecincts, setShowPrecincts] = useState(false);
-    const [showConstituent, setShowConstituent] = useState(true);
 
-    // Fetch data
+    // NEW: Instead of a single showConstituent, break it into 3 toggles:
+    const [showFederal, setShowFederal] = useState(true);
+    const [showState, setShowState] = useState(true);
+    const [showLocal, setShowLocal] = useState(true);
+
     useEffect(() => {
-        if (!zipCode) return;
+        if (!zipCode) {
+			navigate('/change-zip');
+			return;
+		}
+
 
         const fetchData = async () => {
             try {
@@ -182,12 +163,6 @@ function MapPage() {
         fetchData();
     }, [zipCode]);
 
-    /*
-      onHover:
-      We want to detect if the user is inside the ZIP or a constituent polygon, 
-      even though we only display lines. So we create "fill" layers with 0 opacity 
-      for interaction. 
-    */
     const onHover = useCallback((event) => {
         const { features, point: { x, y } } = event;
         if (!features) {
@@ -201,13 +176,10 @@ function MapPage() {
             return;
         }
 
-        // Which fill layers might we see? zip-fill-layer, constituent-fill-layer, or the precinct fill
-        // Because precinct fill is also interactive (for the actual color).
         let zipFill = features.find(f => f.layer.id === 'zip-fill-layer');
         let precinctFill = features.find(f => f.layer.id === 'precincts-fill-layer');
         let constituentFills = features.filter(f => f.layer.id === 'constituent-fill-layer');
         let hoveredConstituentIds = constituentFills.map(cf => cf.properties.area_id);
-
 
         setHoverInfo({
             x,
@@ -219,7 +191,6 @@ function MapPage() {
         });
     }, []);
 
-    // Early returns
     if (!zipCode) {
         return <div className="map-page"><p>Please enter a ZIP code on the home page.</p></div>;
     }
@@ -233,7 +204,6 @@ function MapPage() {
         return <div className="map-page"><p>No ZIP code data yet.</p></div>;
     }
 
-    // Build map data
     const zipFeature = {
         type: 'Feature',
         geometry: zipCodeData.geometry,
@@ -262,24 +232,32 @@ function MapPage() {
         features: constituentFeatures
     };
 
-    // Map initial
     const initialViewState = {
         longitude: zipCodeData.area.centroid_lon,
         latitude: zipCodeData.area.centroid_lat,
         zoom: 13
     };
 
-    /*
-      Interactive Layers
-      We'll make the "fill" layers interactive for ZIP and constituent 
-      so that the user can hover inside the polygon. 
-      We'll keep the precinct fill also interactive for the same reason.
-    */
+    // We'll interact with zip-fill-layer, precincts-fill-layer, and constituent-fill-layer
     const interactiveLayerIds = [
         'zip-fill-layer',
         'precincts-fill-layer',
         'constituent-fill-layer'
     ];
+
+    // Build up an array of classification strings that should be visible:
+    const visibleClassifications = [];
+    if (showFederal) {
+        visibleClassifications.push('federal', 'federal_senate_district', 'federal_house_district');
+    }
+    if (showState) {
+        visibleClassifications.push('state_senate_district', 'state_house_district');
+        // If you had a plain 'state' classification, you'd include it here as well
+        // visibleClassifications.push('state');
+    }
+    if (showLocal) {
+        visibleClassifications.push('local');
+    }
 
     const faqs = [
         {
@@ -307,10 +285,7 @@ function MapPage() {
                 >
                     <ScaleControl unit="imperial" />
 
-                    {/* 
-                    This is the absolute-positioned div that will appear
-                    on top of the map. 
-                    */}
+                    {/* Toggle UI */}
                     <div
                         style={{
                             position: 'absolute',
@@ -342,14 +317,36 @@ function MapPage() {
                             />
                             Federal Election 2024 Results
                         </label>
+
+                        {/* Replaced "Legislator Districts" with separate Federal/State/Local toggles */}
+                        <hr />
+                        <strong>Legislator Districts:</strong>
+                        <label style={{ display: 'block', marginBottom: '4px' }}>
+                            <input
+                                type="checkbox"
+                                checked={showFederal}
+                                onChange={(e) => setShowFederal(e.target.checked)}
+                                style={{ marginRight: '8px' }}
+                            />
+                            Show Federal Districts
+                        </label>
+                        <label style={{ display: 'block', marginBottom: '4px' }}>
+                            <input
+                                type="checkbox"
+                                checked={showState}
+                                onChange={(e) => setShowState(e.target.checked)}
+                                style={{ marginRight: '8px' }}
+                            />
+                            Show State Districts
+                        </label>
                         <label style={{ display: 'block' }}>
                             <input
                                 type="checkbox"
-                                checked={showConstituent}
-                                onChange={(e) => setShowConstituent(e.target.checked)}
+                                checked={showLocal}
+                                onChange={(e) => setShowLocal(e.target.checked)}
                                 style={{ marginRight: '8px' }}
                             />
-                            Legislator Districts
+                            Show Local Districts
                         </label>
                     </div>
 
@@ -371,7 +368,8 @@ function MapPage() {
                     {constituentFC.features.length > 0 && (
                         <Source id="constituent-source" type="geojson" data={constituentFC}>
 
-                            {/* Invisible fill for mouseover */}
+                            {/* Invisible fill for mouseover.
+                                We filter out any classifications not in the visibleClassifications array. */}
                             <Layer
                                 id="constituent-fill-layer"
                                 type="fill"
@@ -379,9 +377,11 @@ function MapPage() {
                                     'fill-color': '#000000',
                                     'fill-opacity': 0
                                 }}
-                                layout={{
-                                    visibility: showConstituent ? 'visible' : 'none'
-                                }}
+                                filter={[
+                                    'in',
+                                    ['get', 'classification'],
+                                    ['literal', visibleClassifications]
+                                ]}
                             />
 
                             {/* Visible line for boundaries */}
@@ -389,15 +389,17 @@ function MapPage() {
                                 id="constituent-line-layer"
                                 type="line"
                                 paint={constituentLinePaint}
-                                layout={{
-                                    visibility: showConstituent ? 'visible' : 'none'
-                                }}
+                                filter={[
+                                    'in',
+                                    ['get', 'classification'],
+                                    ['literal', visibleClassifications]
+                                ]}
                             />
                         </Source>
                     )}
 
                     {/* Highlights */}
-                    {/* ZIP highlight if hovered */}
+                    {/* ZIP highlight */}
                     <Layer
                         id="zip-highlight-layer"
                         type="line"
@@ -413,7 +415,7 @@ function MapPage() {
                         ]}
                     />
 
-                    {/* Precinct highlight if hovered (outline the precinct) */}
+                    {/* Precinct highlight if hovered */}
                     {precinctsFeatureCollection.features.length > 0 && (
                         <Layer
                             id="precincts-highlight-layer"
@@ -441,21 +443,18 @@ function MapPage() {
                                 ...constituentLinePaint,
                                 'line-width': 4
                             }}
-                            /*
-                                For multiple area IDs, use 'in' expression:
-                                ['in', ['get', 'area_id'], ['literal', [...]] ]
-                            */
                             filter={[
-                                'in',
-                                ['get', 'area_id'],
-                                ['literal', hoverInfo.hoveredConstituentIds]
+                                'all',
+                                // Must match a hovered area_id
+                                ['in', ['get', 'area_id'], ['literal', hoverInfo.hoveredConstituentIds]],
+                                // Must also match a classification that’s visible
+                                ['in', ['get', 'classification'], ['literal', visibleClassifications]]
                             ]}
                         />
                     )}
 
                     {/* ZIP source (one feature) */}
                     <Source id="zip-source" type="geojson" data={zipFeature}>
-
                         {/* 1) Invisible fill for interaction */}
                         <Layer
                             id="zip-fill-layer"
@@ -485,65 +484,67 @@ function MapPage() {
 
                     {/* Tooltip */}
                     {hoverInfo.features.length > 0 && (
-                        <div className="tooltip" style={{ left: hoverInfo.x, top: hoverInfo.y }}>
+                        <div
+                            className="tooltip"
+                            style={{
+                                left: hoverInfo.x,
+                                top: hoverInfo.y
+                            }}
+                        >
                             {[...hoverInfo.features]
-                                .filter((obj) => "layer" in obj)
-                                .map((feat) => {
+                                .filter(obj => "layer" in obj)
+                                .map(feat => {
                                     const layerId = feat.layer.id;
                                     const props = feat.properties;
 
-                                    // We'll derive an alphabetical `sortKey` and
-                                    // the JSX `content` for each feature.
                                     let sortKey = '';
                                     let content = null;
 
                                     if (layerId === 'zip-fill-layer') {
-                                        sortKey = 'Zip Code'; // we can label it simply "Zip Code"
+                                        sortKey = 'Zip Code';
                                         content = (
                                             <div className="tooltip-item">
-                                                <div className="constituent-tooltip-color"
-                                                    style={{ backgroundColor: "#44638c" }} />
+                                                <div
+                                                    className="constituent-tooltip-color"
+                                                    style={{ backgroundColor: "#44638c" }}
+                                                />
                                                 <p><strong>{sortKey}:</strong> {props.area_id}</p>
                                             </div>
                                         );
                                     } else if (layerId === 'precincts-fill-layer') {
-                                        sortKey = 'Precinct'; // or “Precinct Results”
+                                        sortKey = 'Precinct';
                                         content = (
                                             <div className="tooltip-item">
-                                                <div className="election-results">
-                                                    <strong>2024 Federal Election Results</strong>
-                                                    <p><strong>Dem votes:</strong> {props.votes_dem}</p>
-                                                    <p><strong>Rep votes:</strong> {props.votes_rep}</p>
-                                                </div>
+                                                <strong>2024 Federal Election Results</strong>
+                                                <p><strong>Dem votes:</strong> {props.votes_dem}</p>
+                                                <p><strong>Rep votes:</strong> {props.votes_rep}</p>
                                             </div>
                                         );
                                     } else if (layerId === 'constituent-fill-layer') {
                                         const constituent_area = JSON.parse(props.constituent_area);
-                                        sortKey = constituent_area.name; // e.g. "State Senate District"
+                                        sortKey = constituent_area.name;
                                         content = (
                                             <div className="tooltip-item">
-                                                <div className="constituent-tooltip-color"
-                                                    style={{ backgroundColor: backgroundColorMap[props.classification] }} />
-                                                
+                                                <div
+                                                    className="constituent-tooltip-color"
+                                                    style={{
+                                                        backgroundColor:
+                                                            backgroundColorMap[props.classification] || '#cccccc'
+                                                    }}
+                                                />
                                                 <p>
                                                     <strong>{constituent_area.name}:</strong> {props.representative_name}
                                                 </p>
                                             </div>
                                         );
                                     }
-
                                     return { sortKey, content };
                                 })
-                                // 2) Sort alphabetically by `sortKey`
-                                .sort((a, b) => {
-                                    return a.sortKey.localeCompare(b.sortKey);
-                                })
-                                // 3) Render
+                                .sort((a, b) => a.sortKey.localeCompare(b.sortKey))
                                 .map((item, i) => (
-                                    <div key={i}>
-                                        {item.content}
-                                    </div>
-                                ))}
+                                    <div key={i}>{item.content}</div>
+                                ))
+                            }
                         </div>
                     )}
                 </Map>
