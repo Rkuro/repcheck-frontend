@@ -13,6 +13,18 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+env:
+  # The repo pins no Node version of its own: package.json has no "engines"
+  # field and there is no .nvmrc or .node-version. The only constraint the repo
+  # carries is transitive -- react-scripts 5.0.1 declares engines.node
+  # ">=14.0.0", a floor with no ceiling. 22 is the active LTS line and is the
+  # version the build was actually verified against locally (v22.23.2). Pinned
+  # to the major so patch updates still arrive; pin the full version here if
+  # you want byte-identical runs. Hoisted to a single top-level value so the
+  # two jobs below cannot drift apart, matching how both Python repos handle
+  # PYTHON_VERSION.
+  NODE_VERSION: '22'
+
 jobs:
   build:
     name: Build
@@ -21,17 +33,11 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v4
 
-      - name: Set up Node.js 22
+      - name: Set up Node.js ${{ env.NODE_VERSION }}
         uses: actions/setup-node@v4
         with:
-          # The repo pins no Node version of its own: package.json has no "engines"
-          # field and there is no .nvmrc. The only constraint the repo carries is
-          # transitive -- react-scripts 5.0.1 declares engines.node ">=14.0.0", a
-          # floor with no ceiling. 22 is the active LTS line and is the version the
-          # build was actually verified against locally (v22.23.2). Pinned to the
-          # major so patch updates still arrive; pin the full version here if you
-          # want byte-identical runs.
-          node-version: '22'
+          # Version and its justification live in the top-level `env` block.
+          node-version: ${{ env.NODE_VERSION }}
           cache: npm
 
       - name: Install dependencies from lockfile
@@ -58,16 +64,15 @@ jobs:
       # The tradeoff, stated plainly: with CI=false the build still fails on real
       # compile errors, and ESLint still runs and still prints every warning to
       # this step's log (look for "Compiled with warnings"), so the 9 warnings
-      # stay visible rather than becoming invisible debt. What is given up is the
-      # ratchet -- a *new* warning added by a future PR will also not fail the
-      # build. DISABLE_ESLINT_PLUGIN was rejected precisely because it would have
-      # hidden the warnings entirely instead of just declining to gate on them.
+      # stay visible rather than becoming invisible debt. What this step gives up
+      # is the ratchet -- a *new* warning added by a future PR would not fail the
+      # build here. The separate lint step below restores that ratchet.
+      # DISABLE_ESLINT_PLUGIN was rejected precisely because it would have hidden
+      # the warnings entirely instead of just declining to gate on them.
       #
-      # To restore gating: clear the 9 warnings, then delete this env block so the
-      # runner's CI=true applies again and warnings are errors from then on. An
-      # interim option is a baseline check that fails only when the warning count
-      # rises above 9; that is deliberately not added here because it means new
-      # tooling and a magic number in CI to maintain.
+      # To make the build itself gate again: clear the 9 warnings, then delete
+      # this env block so the runner's CI=true applies and warnings are errors
+      # from then on. At that point the lint step below becomes redundant.
       # ---------------------------------------------------------------------
       - name: Build production bundle (ESLint warnings printed, not gating)
         env:
@@ -76,6 +81,35 @@ jobs:
           # coercion.
           CI: 'false'
         run: npm run build
+
+      # ---------------------------------------------------------------------
+      # GATING. The warning ratchet the step above gives up.
+      #
+      # This is not new tooling: it is the same ESLint the build already runs
+      # (eslint 8.57.1, installed by react-scripts into node_modules/.bin by the
+      # `npm ci` above) with the same configuration (`eslintConfig`: extends
+      # react-app + react-app/jest, already in package.json). No config file, no
+      # dependency and no package.json script is added. It is invoked directly
+      # only so the warning COUNT can be gated on, which `react-scripts build`
+      # offers no way to do -- its CI=true mode is all-or-nothing.
+      #
+      # BASELINE: 9. That is the exact count on this repo today -- no-lone-blocks
+      # in Footer.js; unused vars in RepCard.js, VoteCard.js (x2), MapPage.js and
+      # Reps.js; react-hooks/exhaustive-deps in Bills.js, MapPage.js and Reps.js.
+      # Verified locally: `eslint src --max-warnings 9` exits 0 on current code
+      # and exits 1 the moment a tenth warning appears.
+      #
+      # This number must only ever RATCHET DOWN. When warnings are fixed, lower
+      # it to the new count in the same PR, so the level cannot silently creep
+      # back up. Do not raise it to admit a new warning -- fix the warning. At 0
+      # this step and the CI: 'false' block above can both go away.
+      #
+      # Runs after the build so that a genuine compile failure -- the more severe
+      # defect -- is reported first; nothing is lost by the ordering, because the
+      # build step prints every warning to its own log even when it fails.
+      # ---------------------------------------------------------------------
+      - name: Lint (fails if ESLint warnings exceed the baseline of 9)
+        run: ./node_modules/.bin/eslint src --max-warnings 9
 
   # No test job. src/App.test.js is the untouched Create React App scaffold: it
   # asserts a "learn react" link that has never existed in this app, and the suite
@@ -94,12 +128,12 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v4
 
-      - name: Set up Node.js 22
+      - name: Set up Node.js ${{ env.NODE_VERSION }}
         uses: actions/setup-node@v4
         with:
           # No `cache: npm` here on purpose -- this job installs nothing, so there
           # would be no node_modules to save and a restored cache would go unused.
-          node-version: '22'
+          node-version: ${{ env.NODE_VERSION }}
 
       # ---------------------------------------------------------------------
       # ADVISORY, NOT GATING -- deliberate, not an oversight.
