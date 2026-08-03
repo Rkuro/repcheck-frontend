@@ -1,0 +1,158 @@
+name: CI
+
+# Triggers: every pull request (any base branch) and every push to the default branch.
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  # The repo pins no Node version of its own: package.json has no "engines"
+  # field and there is no .nvmrc or .node-version. The only constraint the repo
+  # carries is transitive -- react-scripts 5.0.1 declares engines.node
+  # ">=14.0.0", a floor with no ceiling. 22 is the active LTS line and is the
+  # version the build was actually verified against locally (v22.23.2). Pinned
+  # to the major so patch updates still arrive; pin the full version here if
+  # you want byte-identical runs. Hoisted to a single top-level value so the
+  # two jobs below cannot drift apart, matching how both Python repos handle
+  # PYTHON_VERSION.
+  NODE_VERSION: '22'
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          # Version and its justification live in the top-level `env` block.
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - name: Install dependencies from lockfile
+        run: npm ci
+
+      # ---------------------------------------------------------------------
+      # GATING. This is the real signal for this repo: a genuine compile error
+      # (bad syntax, unresolved import, failed webpack build) fails here.
+      #
+      # Why CI is forced to false for this step only:
+      #
+      # GitHub Actions sets CI=true for every step automatically, and
+      # `react-scripts build` promotes *all* ESLint warnings to hard errors when
+      # it sees CI=true ("Treating warnings as errors because process.env.CI =
+      # true"). This repo has 9 pre-existing ESLint warnings -- no-lone-blocks in
+      # Footer.js, unused vars in RepCard.js / VoteCard.js / MapPage.js / Reps.js,
+      # and react-hooks/exhaustive-deps in Bills.js / MapPage.js / Reps.js. So a
+      # naive build step is red on its very first run, on code that ships fine.
+      #
+      # Fixing the warnings is out of scope for this change: the exhaustive-deps
+      # ones cannot be silenced without changing effect re-run behaviour, which
+      # needs a human who knows the app.
+      #
+      # The tradeoff, stated plainly: with CI=false the build still fails on real
+      # compile errors, and ESLint still runs and still prints every warning to
+      # this step's log (look for "Compiled with warnings"), so the 9 warnings
+      # stay visible rather than becoming invisible debt. What this step gives up
+      # is the ratchet -- a *new* warning added by a future PR would not fail the
+      # build here. The separate lint step below restores that ratchet.
+      # DISABLE_ESLINT_PLUGIN was rejected precisely because it would have hidden
+      # the warnings entirely instead of just declining to gate on them.
+      #
+      # To make the build itself gate again: clear the 9 warnings, then delete
+      # this env block so the runner's CI=true applies and warnings are errors
+      # from then on. At that point the lint step below becomes redundant.
+      # ---------------------------------------------------------------------
+      - name: Build production bundle (ESLint warnings printed, not gating)
+        env:
+          # Quoted deliberately: react-scripts tests `process.env.CI` against the
+          # literal string "false", so this must not ride on YAML/Actions boolean
+          # coercion.
+          CI: 'false'
+        run: npm run build
+
+      # ---------------------------------------------------------------------
+      # GATING. The warning ratchet the step above gives up.
+      #
+      # This is not new tooling: it is the same ESLint the build already runs
+      # (eslint 8.57.1, installed by react-scripts into node_modules/.bin by the
+      # `npm ci` above) with the same configuration (`eslintConfig`: extends
+      # react-app + react-app/jest, already in package.json). No config file, no
+      # dependency and no package.json script is added. It is invoked directly
+      # only so the warning COUNT can be gated on, which `react-scripts build`
+      # offers no way to do -- its CI=true mode is all-or-nothing.
+      #
+      # BASELINE: 9. That is the exact count on this repo today -- no-lone-blocks
+      # in Footer.js; unused vars in RepCard.js, VoteCard.js (x2), MapPage.js and
+      # Reps.js; react-hooks/exhaustive-deps in Bills.js, MapPage.js and Reps.js.
+      # Verified locally: `eslint src --max-warnings 9` exits 0 on current code
+      # and exits 1 the moment a tenth warning appears.
+      #
+      # This number must only ever RATCHET DOWN. When warnings are fixed, lower
+      # it to the new count in the same PR, so the level cannot silently creep
+      # back up. Do not raise it to admit a new warning -- fix the warning. At 0
+      # this step and the CI: 'false' block above can both go away.
+      #
+      # Runs after the build so that a genuine compile failure -- the more severe
+      # defect -- is reported first; nothing is lost by the ordering, because the
+      # build step prints every warning to its own log even when it fails.
+      # ---------------------------------------------------------------------
+      - name: Lint (fails if ESLint warnings exceed the baseline of 9)
+        run: ./node_modules/.bin/eslint src --max-warnings 9
+
+  # No test job. src/App.test.js is the untouched Create React App scaffold: it
+  # asserts a "learn react" link that has never existed in this app, and the suite
+  # cannot even reach an assertion -- Jest 27 (pinned by react-scripts 5.0.1)
+  # cannot parse ESM-only react-markdown, so the single suite dies at import with
+  # "Test suite failed to run / Jest encountered an unexpected token" and runs 0
+  # tests. Wiring that up even as a non-gating job would add a permanently red
+  # check that says nothing about the code, which is the kind of noise people
+  # learn to ignore. Fixing the scaffold test and the Jest ESM transform is its
+  # own change; add a gating test job once `npm test` can actually run.
+
+  audit:
+    name: Dependency audit (advisory)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          # No `cache: npm` here on purpose -- this job installs nothing, so there
+          # would be no node_modules to save and a restored cache would go unused.
+          node-version: ${{ env.NODE_VERSION }}
+
+      # ---------------------------------------------------------------------
+      # ADVISORY, NOT GATING -- deliberate, not an oversight.
+      #
+      # `npm audit` currently reports 66 advisories (13 low, 18 moderate, 32 high,
+      # 3 critical) and exits 1. Essentially all of them are inside the
+      # unmaintained react-scripts 5.0.1 toolchain (webpack-dev-server, svgo/nth-
+      # check, postcss, ws, ...) -- build-time and dev-server dependencies rather
+      # than code shipped to users -- and they cannot be resolved while the repo is
+      # on CRA. `npm audit fix --force` would replace react-scripts and break the
+      # build. continue-on-error keeps the real exit code and the full report
+      # visible on the step while letting the job pass.
+      #
+      # This becomes gating after the CRA -> Vite migration: once the toolchain is
+      # maintained again the remaining advisories should be few and genuinely
+      # actionable. At that point drop continue-on-error, and consider scoping it
+      # with `npm audit --omit=dev` or `--audit-level=high` so the job fails on
+      # what actually reaches production.
+      # ---------------------------------------------------------------------
+      - name: npm audit (reports advisories; does not fail the build)
+        continue-on-error: true
+        run: npm audit
